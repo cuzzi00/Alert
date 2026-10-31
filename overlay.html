@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alert CUZZI00</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<style>
+  :root{
+    --ametista:#9b6dff;
+    --lilla:#c9a7ff;
+    --lilla-chiaro:#e8dcff;
+    --fondo:rgba(28,16,44,.82);
+  }
+  html,body{margin:0;height:100%;background:transparent;overflow:hidden;
+    font-family:"Quicksand",system-ui,-apple-system,sans-serif;}
+  #stage{position:fixed;inset:0;display:flex;justify-content:center;pointer-events:none;padding:5vh 4vw;box-sizing:border-box}
+  #stage.alto{align-items:flex-start}
+  #stage.centro{align-items:center}
+  #stage.basso{align-items:flex-end}
+
+  .alert{
+    position:relative;display:flex;align-items:center;gap:1.1em;
+    min-width:min(20em,86vw);max-width:86vw;box-sizing:border-box;
+    padding:1em 1.6em 1em 1.1em;font-size:clamp(14px,2.4vw,30px);
+    color:#fff;background:var(--fondo);
+    border:2px solid var(--lilla);border-radius:1.1em;
+    box-shadow:0 0 .9em rgba(155,109,255,.55), inset 0 0 1.2em rgba(201,167,255,.12);
+    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+    animation:entra .55s cubic-bezier(.2,1.3,.4,1) both;
+  }
+  .alert.esce{animation:esce .45s ease-in both}
+  #stage.basso .alert{animation-name:entraBasso}
+  #stage.basso .alert.esce{animation-name:esceBasso}
+  #stage.centro .alert{animation-name:entraCentro}
+  #stage.centro .alert.esce{animation-name:esceCentro}
+
+  .gemma{flex:0 0 auto;width:2.6em;height:2.6em;filter:drop-shadow(0 0 .35em rgba(201,167,255,.9));
+    animation:brilla 2.2s ease-in-out infinite}
+  .testo{display:flex;flex-direction:column;gap:.15em;min-width:0}
+  .titolo{font-size:.62em;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--lilla)}
+  .nome{font-size:1.15em;font-weight:700;line-height:1.15;color:#fff;
+    text-shadow:0 0 .4em rgba(155,109,255,.8);overflow-wrap:anywhere}
+  .dettaglio{font-size:.72em;color:var(--lilla-chiaro);overflow-wrap:anywhere}
+  .piattaforma{position:absolute;top:-.75em;right:1.2em;font-size:.5em;font-weight:700;
+    letter-spacing:.1em;padding:.25em .8em;border-radius:1em;background:var(--ametista);color:#fff}
+  .barra{position:absolute;left:1.1em;right:1.1em;bottom:.45em;height:3px;border-radius:3px;
+    background:linear-gradient(90deg,var(--ametista),var(--lilla-chiaro));transform-origin:left;
+    animation:barra linear both}
+  .scintilla{position:absolute;width:.35em;height:.35em;background:var(--lilla-chiaro);border-radius:50%;
+    box-shadow:0 0 .5em #fff;opacity:0;animation:scintilla 1.6s ease-out infinite}
+
+  @keyframes entra{from{opacity:0;transform:translateY(-120%) scale(.9)}to{opacity:1;transform:none}}
+  @keyframes esce{to{opacity:0;transform:translateY(-60%) scale(.95)}}
+  @keyframes entraBasso{from{opacity:0;transform:translateY(120%) scale(.9)}to{opacity:1;transform:none}}
+  @keyframes esceBasso{to{opacity:0;transform:translateY(60%) scale(.95)}}
+  @keyframes entraCentro{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+  @keyframes esceCentro{to{opacity:0;transform:scale(.8)}}
+  @keyframes brilla{0%,100%{transform:rotate(-6deg) scale(1)}50%{transform:rotate(6deg) scale(1.08)}}
+  @keyframes barra{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+  @keyframes scintilla{0%{opacity:0;transform:scale(.3)}30%{opacity:1}100%{opacity:0;transform:translateY(-1.4em) scale(1.2)}}
+
+  #debug{position:fixed;left:8px;bottom:8px;max-width:60vw;max-height:40vh;overflow:auto;
+    font:12px/1.35 ui-monospace,monospace;color:#e8dcff;background:rgba(0,0,0,.7);
+    padding:8px 10px;border-radius:8px;border:1px solid #9b6dff;display:none;white-space:pre-wrap}
+  #debug.on{display:block}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div id="debug"></div>
+
+<script>
+(() => {
+  const C = window.ALERT_CONFIG || {};
+  const hash = new URLSearchParams(location.hash.slice(1));
+  const query = new URLSearchParams(location.search);
+  const DEBUG = hash.get('debug') === '1' || query.get('debug') === '1';
+  const stage = document.getElementById('stage');
+  const dbg = document.getElementById('debug');
+  stage.className = ['alto','centro','basso'].includes(C.posizione) ? C.posizione : 'alto';
+  if (DEBUG) dbg.classList.add('on');
+
+  function log(...a){
+    const line = new Date().toLocaleTimeString() + '  ' + a.map(x => typeof x === 'string' ? x : JSON.stringify(x)).join(' ');
+    console.log(line);
+    if (DEBUG){ dbg.textContent = (line + '\n' + dbg.textContent).slice(0, 6000); }
+  }
+
+  // ---------------- CODA ALERT ----------------
+  const GEMMA = `<svg class="gemma" viewBox="0 0 64 64" aria-hidden="true">
+    <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f1e8ff"/><stop offset=".45" stop-color="#c9a7ff"/><stop offset="1" stop-color="#7a4fe0"/></linearGradient></defs>
+    <path d="M18 8h28l14 16-28 34L4 24z" fill="url(#g1)"/>
+    <path d="M4 24h56M18 8l6 16 8 34M46 8l-6 16-8 34M24 24l8-16 8 16" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.6" stroke-linejoin="round"/>
+  </svg>`;
+
+  const coda = [];
+  let occupato = false;
+  const visti = new Set(); // evita doppioni
+
+  function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  function accoda(a){
+    if (a.id){ if (visti.has(a.id)) return; visti.add(a.id); if (visti.size > 500) visti.clear(); }
+    if (C.attivi && C.attivi[a.tipo] === false) return;
+    log('ALERT', a.tipo, a.nome || '', a.dettaglio || '');
+    coda.push(a);
+    if (!occupato) prossimo();
+  }
+
+  function suonoPer(a){
+    if (a.tipo === 'premio'){
+      const mappa = C.riscattabili || {};
+      const key = Object.keys(mappa).find(k => k.trim().toLowerCase() === String(a.premio || '').trim().toLowerCase());
+      if (key) return mappa[key];
+    }
+    return (C.suoni || {})[a.tipo];
+  }
+
+  function suona(file){
+    return new Promise(res => {
+      if (!file) return res(0);
+      const au = new Audio(file);
+      au.volume = Math.max(0, Math.min(1, C.volume ?? .8));
+      let durata = 0;
+      au.addEventListener('loadedmetadata', () => { durata = au.duration || 0; });
+      au.addEventListener('ended', () => res(durata));
+      au.addEventListener('error', () => { log('Audio non trovato:', file); res(0); });
+      au.play().then(() => {
+        // attende i metadati per conoscere la durata
+        const t = setInterval(() => { if (au.duration) { clearInterval(t); res(au.duration); } }, 50);
+        setTimeout(() => { clearInterval(t); res(au.duration || 0); }, 1500);
+      }).catch(e => { log('Riproduzione bloccata:', e.message); res(0); });
+    });
+  }
+
+  async function prossimo(){
+    const a = coda.shift();
+    if (!a){ occupato = false; return; }
+    occupato = true;
+
+    const file = suonoPer(a);
+    const durataAudio = await suona(file);
+    const base = (C.durataAlertSecondi || 6);
+    const durata = Math.max(base, Math.min(durataAudio + .5, 30));
+
+    const mostra = !(a.tipo === 'premio' && C.riscattabiliConRiquadro === false);
+    if (mostra){
+      const el = document.createElement('div');
+      el.className = 'alert';
+      el.innerHTML = `
+        ${a.piattaforma ? `<span class="piattaforma">${esc(a.piattaforma)}</span>` : ''}
+        ${GEMMA}
+        <div class="testo">
+          <span class="titolo">${esc(a.titolo)}</span>
+          <span class="nome">${esc(a.nome)}</span>
+          ${a.dettaglio ? `<span class="dettaglio">${esc(a.dettaglio)}</span>` : ''}
+        </div>
+        <div class="barra" style="animation-duration:${durata}s"></div>`;
+      for (let i = 0; i < 6; i++){
+        const s = document.createElement('span');
+        s.className = 'scintilla';
+        s.style.left = (8 + Math.random() * 84) + '%';
+        s.style.top = (10 + Math.random() * 70) + '%';
+        s.style.animationDelay = (Math.random() * 1.6) + 's';
+        el.appendChild(s);
+      }
+      stage.appendChild(el);
+      await attendi(durata * 1000);
+      el.classList.add('esce');
+      await attendi(450);
+      el.remove();
+    } else {
+      await attendi(Math.max(durataAudio * 1000, 500));
+    }
+    await attendi(400);
+    prossimo();
+  }
+  const attendi = ms => new Promise(r => setTimeout(r, ms));
+
+  // Funzione pubblica per i test (pagina di configurazione)
+  window.addEventListener('message', e => {
+    if (e.data && e.data.tipoTest) accoda(esempio(e.data.tipoTest));
+  });
+  function esempio(tipo){
+    const m = {
+      follow: {titolo:'Nuovo follower', nome:'ViewerDiProva', piattaforma:'TWITCH'},
+      sub:    {titolo:'Nuovo abbonamento', nome:'ViewerDiProva', dettaglio:'Tier 1', piattaforma:'TWITCH'},
+      resub:  {titolo:'Rinnovo abbonamento', nome:'ViewerDiProva', dettaglio:'7 mesi · "ciao Cuzzi!"', piattaforma:'TWITCH'},
+      gift:   {titolo:'Sub regalati', nome:'ViewerGeneroso', dettaglio:'ha regalato 5 sub', piattaforma:'KICK'},
+      bits:   {titolo:'Bits', nome:'ViewerDiProva', dettaglio:'100 bits', piattaforma:'TWITCH'},
+      kicks:  {titolo:'Kicks', nome:'ViewerDiProva', dettaglio:'100 Kicks', piattaforma:'KICK'},
+      raid:   {titolo:'Raid in arrivo', nome:'StreamerAmica', dettaglio:'con 25 spettatori', piattaforma:'TWITCH'},
+      premio: {titolo:'Riscattabile', nome:'ViewerDiProva', premio:Object.keys(C.riscattabili||{})[0]||'Premio', piattaforma:'TWITCH'}
+    }[tipo] || {titolo:tipo, nome:'Test'};
+    if (tipo === 'premio') m.dettaglio = m.premio;
+    return {tipo, ...m};
+  }
+  if (query.get('test') || hash.get('test')) {
+    ['follow','sub','premio','gift','raid'].forEach(t => accoda(esempio(t)));
+  }
+
+  // ---------------- TWITCH (EventSub WebSocket) ----------------
+  const twToken = hash.get('tw');
+  let twUser = null;
+
+  async function twitchStart(){
+    if (!twToken){ log('Twitch: nessun token nel link (fai il login dalla pagina di configurazione)'); return; }
+    try {
+      const r = await fetch('https://id.twitch.tv/oauth2/validate', { headers: { Authorization: 'OAuth ' + twToken } });
+      if (!r.ok){ log('Twitch: token scaduto o non valido. Rifai il login e aggiorna il link.'); return; }
+      const v = await r.json();
+      twUser = { id: v.user_id, login: v.login, clientId: v.client_id };
+      log('Twitch: connessa come', v.login, '– scade tra', Math.round(v.expires_in / 86400), 'giorni');
+      twitchConnect('wss://eventsub.wss.twitch.tv/ws?keepalive_timeout_seconds=30', false);
+    } catch (e){ log('Twitch: errore validazione', e.message); setTimeout(twitchStart, 15000); }
+  }
+
+  let twWs = null, twKeepalive = null;
+  function twitchConnect(url, isReconnect){
+    const ws = new WebSocket(url);
+    let timeoutSec = 30;
+    const resetWatchdog = () => {
+      clearTimeout(twKeepalive);
+      twKeepalive = setTimeout(() => { log('Twitch: nessun segnale, riconnetto'); try{ws.close();}catch{} }, (timeoutSec + 10) * 1000);
+    };
+    ws.onmessage = async ev => {
+      resetWatchdog();
+      const msg = JSON.parse(ev.data);
+      const type = msg.metadata?.message_type;
+      if (type === 'session_welcome'){
+        timeoutSec = msg.payload.session.keepalive_timeout_seconds || 30;
+        const old = twWs; twWs = ws;
+        if (old && old !== ws) { old.onclose = null; try{ old.close(); }catch{} }
+        if (!isReconnect) await twitchSubscribe(msg.payload.session.id);
+        log('Twitch: in ascolto ✔');
+      } else if (type === 'session_reconnect'){
+        twitchConnect(msg.payload.session.reconnect_url, true);
+      } else if (type === 'notification'){
+        twitchEvent(msg.payload.subscription.type, msg.payload.event, msg.metadata.message_id);
+      } else if (type === 'revocation'){
+        log('Twitch: iscrizione revocata', msg.payload.subscription.type, msg.payload.subscription.status);
+      }
+    };
+    ws.onclose = () => {
+      if (twWs === ws || !twWs){ twWs = null; log('Twitch: disconnessa, riprovo tra 5s'); setTimeout(twitchStart, 5000); }
+    };
+    ws.onerror = () => {};
+  }
+
+  async function twitchSubscribe(sessionId){
+    const b = twUser.id;
+    const subs = [
+      ['channel.follow', '2', { broadcaster_user_id: b, moderator_user_id: b }],
+      ['channel.subscribe', '1', { broadcaster_user_id: b }],
+      ['channel.subscription.message', '1', { broadcaster_user_id: b }],
+      ['channel.subscription.gift', '1', { broadcaster_user_id: b }],
+      ['channel.cheer', '1', { broadcaster_user_id: b }],
+      ['channel.raid', '1', { to_broadcaster_user_id: b }],
+      ['channel.channel_points_custom_reward_redemption.add', '1', { broadcaster_user_id: b }],
+    ];
+    for (const [type, version, condition] of subs){
+      try {
+        const r = await fetch('https://api.twitch.tv/helix/eventsub/subscriptions', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + twToken, 'Client-Id': twUser.clientId, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type, version, condition, transport: { method: 'websocket', session_id: sessionId } })
+        });
+        if (!r.ok){ const t = await r.json().catch(() => ({})); log('Twitch: non attivo', type, '-', t.message || r.status); }
+      } catch (e){ log('Twitch: errore iscrizione', type, e.message); }
+    }
+  }
+
+  function twitchEvent(type, e, id){
+    const P = 'TWITCH';
+    const tier = t => ({ '1000': 'Tier 1', '2000': 'Tier 2', '3000': 'Tier 3' }[t] || '');
+    switch (type){
+      case 'channel.follow':
+        return accoda({ id, tipo: 'follow', titolo: 'Nuovo follower', nome: e.user_name, piattaforma: P });
+      case 'channel.subscribe':
+        if (e.is_gift) return; // i regalati arrivano come "gift"
+        return accoda({ id, tipo: 'sub', titolo: 'Nuovo abbonamento', nome: e.user_name, dettaglio: tier(e.tier), piattaforma: P });
+      case 'channel.subscription.message':
+        return accoda({ id, tipo: 'resub', titolo: 'Rinnovo abbonamento', nome: e.user_name,
+          dettaglio: `${e.cumulative_months} mesi` + (e.message?.text ? ` · "${e.message.text}"` : ''), piattaforma: P });
+      case 'channel.subscription.gift':
+        return accoda({ id, tipo: 'gift', titolo: 'Sub regalati', nome: e.is_anonymous ? 'Anonimo' : e.user_name,
+          dettaglio: `ha regalato ${e.total} sub`, piattaforma: P });
+      case 'channel.cheer':
+        return accoda({ id, tipo: 'bits', titolo: 'Bits', nome: e.is_anonymous ? 'Anonimo' : e.user_name,
+          dettaglio: `${e.bits} bits` + (e.message ? ` · ${e.message}` : ''), piattaforma: P });
+      case 'channel.raid':
+        return accoda({ id, tipo: 'raid', titolo: 'Raid in arrivo', nome: e.from_broadcaster_user_name,
+          dettaglio: `con ${e.viewers} spettatori`, piattaforma: P });
+      case 'channel.channel_points_custom_reward_redemption.add':
+        return accoda({ id, tipo: 'premio', titolo: 'Riscattabile', nome: e.user_name, premio: e.reward.title,
+          dettaglio: e.reward.title + (e.user_input ? ` · ${e.user_input}` : ''), piattaforma: P });
+    }
+  }
+
+  // ---------------- KICK (WebSocket pubblico Pusher) ----------------
+  // Nota: è il canale non ufficiale che usa il sito di Kick. Può cambiare.
+  const KICK_WS = 'wss://ws-us2.pusher.com/app/32cbd69e4b950bf97679?protocol=7&client=js&version=8.4.0&flash=false';
+
+  function kickStart(){
+    const ch = Number(C.kickChannelId), room = Number(C.kickChatroomId);
+    if (!ch && !room){ log('Kick: disattivato (manca kickChannelId/kickChatroomId in config.js)'); return; }
+    const ws = new WebSocket(KICK_WS);
+    let ping;
+    ws.onopen = () => {
+      const canali = [];
+      if (room) canali.push(`chatrooms.${room}.v2`, `chatroom_${room}`, `chatrooms.${room}`);
+      if (ch) canali.push(`channel.${ch}`, `channel_${ch}`, `predictions-channel-${ch}`);
+      canali.forEach(c => ws.send(JSON.stringify({ event: 'pusher:subscribe', data: { auth: '', channel: c } })));
+      ping = setInterval(() => { try{ ws.send(JSON.stringify({ event: 'pusher:ping', data: {} })); }catch{} }, 60000);
+      log('Kick: in ascolto ✔');
+    };
+    ws.onmessage = ev => {
+      const m = JSON.parse(ev.data);
+      if (m.event === 'pusher:ping'){ ws.send(JSON.stringify({ event: 'pusher:pong', data: {} })); return; }
+      if (m.event?.startsWith('pusher')) return;
+      let d = m.data; try { d = typeof d === 'string' ? JSON.parse(d) : d; } catch {}
+      kickEvent(m.event, d || {});
+    };
+    ws.onclose = () => { clearInterval(ping); log('Kick: disconnesso, riprovo tra 5s'); setTimeout(kickStart, 5000); };
+    ws.onerror = () => {};
+  }
+
+  const nomeDi = (...xs) => xs.find(x => typeof x === 'string' && x) || 'Qualcuno';
+
+  function kickEvent(nomeEvento, d){
+    const ev = String(nomeEvento).replace(/^App\\Events\\/, '').replace(/^App\\\\Events\\\\/, '');
+    if (DEBUG && ev !== 'ChatMessageEvent') log('Kick evento:', ev, d);
+    const P = 'KICK';
+    const id = 'k-' + ev + '-' + (d.id || d.created_at || '') + '-' + JSON.stringify(d).length;
+
+    // Messaggi di chat: alcuni riscatti arrivano come messaggio speciale
+    if (ev === 'ChatMessageEvent'){
+      const meta = d.metadata || {};
+      if (meta.reward_title || meta.reward?.title){
+        const titolo = meta.reward_title || meta.reward.title;
+        accoda({ id: 'k-msg-' + d.id, tipo: 'premio', titolo: 'Riscattabile', nome: nomeDi(meta.username, d.sender?.username),
+          premio: titolo, dettaglio: titolo + (meta.user_input ? ` · ${meta.user_input}` : ''), piattaforma: P });
+      }
+      return;
+    }
+    if (/Reward|Redeem/i.test(ev)){
+      const titolo = d.reward_title || d.reward?.title || d.title || 'Premio';
+      const input = d.user_input || d.input || d.message || '';
+      return accoda({ id, tipo: 'premio', titolo: 'Riscattabile',
+        nome: nomeDi(d.username, d.user_display_name, d.user?.username, d.redeemer?.username, d.sender?.username),
+        premio: titolo, dettaglio: titolo + (input ? ` · ${input}` : ''), piattaforma: P });
+    }
+    if (/GiftedSubscriptions|GiftsLeaderboard/i.test(ev)){
+      if (/Leaderboard/i.test(ev)) return;
+      const n = (d.gifted_usernames || []).length || d.quantity || 1;
+      return accoda({ id, tipo: 'gift', titolo: 'Sub regalati', nome: nomeDi(d.gifter_username, d.gifter?.username),
+        dettaglio: `ha regalato ${n} sub`, piattaforma: P });
+    }
+    if (/Subscription/i.test(ev)){
+      const mesi = d.months || 1;
+      return accoda({ id, tipo: mesi > 1 ? 'resub' : 'sub', titolo: mesi > 1 ? 'Rinnovo abbonamento' : 'Nuovo abbonamento',
+        nome: nomeDi(d.username, d.user?.username), dettaglio: mesi > 1 ? `${mesi} mesi` : '', piattaforma: P });
+    }
+    if (/Follow/i.test(ev)){
+      if (d.followed === false) return;
+      const nome = d.username || d.user?.username || d.follower?.username;
+      if (!nome) return; // a volte Kick manda solo il conteggio
+      return accoda({ id: 'k-follow-' + nome, tipo: 'follow', titolo: 'Nuovo follower', nome, piattaforma: P });
+    }
+    if (/Kicks|Gift/i.test(ev)){
+      const q = d.gift?.amount || d.amount || d.kicks || '';
+      return accoda({ id, tipo: 'kicks', titolo: 'Kicks', nome: nomeDi(d.sender?.username, d.username, d.user?.username),
+        dettaglio: q ? `${q} Kicks` : (d.gift?.name || ''), piattaforma: P });
+    }
+  }
+
+  twitchStart();
+  kickStart();
+})();
+</script>
+</body>
+</html>

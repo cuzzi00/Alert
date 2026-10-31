@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Configurazione alert – CUZZI00</title>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<style>
+  body{margin:0;font-family:"Quicksand",system-ui,sans-serif;background:#140b20;color:#efe6ff}
+  main{max-width:760px;margin:0 auto;padding:24px 18px 60px}
+  h1{font-size:1.6rem;margin:.2em 0 .1em;color:#c9a7ff}
+  h2{font-size:1.1rem;margin:0 0 .6em;color:#c9a7ff}
+  p{line-height:1.5}
+  .box{background:#1e1230;border:1px solid #4b2f7a;border-radius:14px;padding:16px 18px;margin:16px 0}
+  button,.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:.65em 1.1em;cursor:pointer;
+    background:#9b6dff;color:#fff;text-decoration:none;display:inline-block;margin:4px 4px 4px 0}
+  button.sec{background:#2d1b47;border:1px solid #9b6dff}
+  .ok{color:#9ff0c0}.ko{color:#ffb3c7}
+  textarea{width:100%;box-sizing:border-box;font:13px ui-monospace,monospace;background:#0e0717;color:#e8dcff;
+    border:1px solid #4b2f7a;border-radius:10px;padding:10px;height:90px}
+  .anteprima{position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;
+    background:linear-gradient(135deg,#3a4a5a,#6b5a4a 60%,#2a3a2a);border:1px solid #4b2f7a}
+  .anteprima iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  small{color:#b9a6d9}
+</style>
+</head>
+<body>
+<main>
+  <h1>Alert CUZZI00</h1>
+  <p><small>Pagina di configurazione. Il link che generi qui va incollato in Moblin (o in OBS) come sorgente browser.</small></p>
+
+  <div class="box">
+    <h2>1 · Stato configurazione</h2>
+    <div id="stato"></div>
+  </div>
+
+  <div class="box">
+    <h2>2 · Collega Twitch</h2>
+    <p id="twInfo">Non collegata.</p>
+    <button id="login">Accedi con Twitch</button>
+    <p><small>URL di reindirizzamento da registrare su dev.twitch.tv (copialo identico):</small><br>
+      <code id="redirect"></code></p>
+  </div>
+
+  <div class="box">
+    <h2>3 · Il tuo link per la sorgente browser</h2>
+    <textarea id="link" readonly placeholder="Collega Twitch (o configura Kick) per generare il link"></textarea>
+    <button id="copia">Copia link</button>
+    <button id="copiaDebug" class="sec">Copia link con diagnostica</button>
+    <p><small>⚠️ Il link contiene la tua chiave di accesso Twitch: non mostrarlo in live e non condividerlo.</small></p>
+  </div>
+
+  <div class="box">
+    <h2>4 · Prova gli alert</h2>
+    <div class="anteprima"><iframe id="prev" src="overlay.html" allow="autoplay"></iframe></div>
+    <p>
+      <button class="sec" data-t="follow">Follow</button>
+      <button class="sec" data-t="sub">Sub</button>
+      <button class="sec" data-t="resub">Resub</button>
+      <button class="sec" data-t="gift">Sub regalati</button>
+      <button class="sec" data-t="bits">Bits</button>
+      <button class="sec" data-t="kicks">Kicks</button>
+      <button class="sec" data-t="raid">Raid</button>
+      <button class="sec" data-t="premio">Riscattabile</button>
+    </p>
+    <p><small>L'anteprima usa solo dati finti. Per una prova reale riscatta un tuo premio su Twitch/Kick con il link aperto in Moblin.</small></p>
+  </div>
+</main>
+
+<script>
+  const C = window.ALERT_CONFIG || {};
+  const SCOPES = ['channel:read:redemptions','moderator:read:followers','channel:read:subscriptions','bits:read'];
+  const redirect = location.origin + location.pathname.replace(/index\.html$/, '');
+  document.getElementById('redirect').textContent = redirect;
+
+  const stato = document.getElementById('stato');
+  const okId = C.twitchClientId && !/INCOLLA/.test(C.twitchClientId);
+  const okKick = Number(C.kickChannelId) || Number(C.kickChatroomId);
+  const nRisc = Object.keys(C.riscattabili || {}).length;
+  stato.innerHTML = `
+    <div class="${okId ? 'ok' : 'ko'}">${okId ? '✔' : '✘'} Twitch Client ID ${okId ? 'presente' : 'mancante in config.js'}</div>
+    <div class="${okKick ? 'ok' : 'ko'}">${okKick ? '✔' : '–'} Kick ${okKick ? `attivo (canale ${C.kickChannelId}, chat ${C.kickChatroomId})` : 'non configurato'}</div>
+    <div class="ok">✔ ${nRisc} riscattabili con suono: ${Object.keys(C.riscattabili || {}).map(k => `“${k}”`).join(', ') || 'nessuno'}</div>`;
+
+  let token = sessionStorageGet('tw');
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (h.get('access_token')){
+    token = h.get('access_token');
+    sessionStorageSet('tw', token);
+    history.replaceState(null, '', location.pathname);
+  }
+  if (h.get('error')) document.getElementById('twInfo').innerHTML = `<span class="ko">Errore: ${h.get('error_description') || h.get('error')}</span>`;
+
+  document.getElementById('login').onclick = () => {
+    if (!okId){ alert('Prima inserisci il Client ID in config.js'); return; }
+    const u = new URL('https://id.twitch.tv/oauth2/authorize');
+    u.searchParams.set('response_type', 'token');
+    u.searchParams.set('client_id', C.twitchClientId);
+    u.searchParams.set('redirect_uri', redirect);
+    u.searchParams.set('scope', SCOPES.join(' '));
+    u.searchParams.set('force_verify', 'true');
+    location.href = u.toString();
+  };
+
+  async function aggiorna(){
+    const info = document.getElementById('twInfo');
+    if (token){
+      const r = await fetch('https://id.twitch.tv/oauth2/validate', { headers: { Authorization: 'OAuth ' + token } }).catch(() => null);
+      if (r && r.ok){
+        const v = await r.json();
+        info.innerHTML = `<span class="ok">✔ Collegata come <b>${v.login}</b> · il collegamento scade tra circa ${Math.round(v.expires_in / 86400)} giorni</span>`;
+      } else { info.innerHTML = '<span class="ko">Collegamento scaduto: accedi di nuovo.</span>'; token = null; }
+    }
+    if (token || okKick){
+      const base = redirect + 'overlay.html';
+      document.getElementById('link').value = base + (token ? '#tw=' + token : '');
+    }
+  }
+  aggiorna();
+
+  function copia(testo){
+    navigator.clipboard?.writeText(testo).then(() => alert('Link copiato ✔'), () => {
+      const t = document.getElementById('link'); t.select(); document.execCommand('copy'); alert('Link copiato ✔');
+    });
+  }
+  document.getElementById('copia').onclick = () => { const v = document.getElementById('link').value; if (v) copia(v); };
+  document.getElementById('copiaDebug').onclick = () => {
+    const v = document.getElementById('link').value; if (!v) return;
+    copia(v + (v.includes('#') ? '&' : '#') + 'debug=1');
+  };
+
+  document.querySelectorAll('[data-t]').forEach(b => b.onclick = () => {
+    document.getElementById('prev').contentWindow.postMessage({ tipoTest: b.dataset.t }, '*');
+  });
+
+  function sessionStorageGet(k){ try { return sessionStorage.getItem(k); } catch { return null; } }
+  function sessionStorageSet(k, v){ try { sessionStorage.setItem(k, v); } catch {} }
+</script>
+</body>
+</html>
