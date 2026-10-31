@@ -8,15 +8,15 @@ window.ALERT_CONFIG = {
 
   // --- TWITCH ------------------------------------------------
   // Client ID dell'app creata su https://dev.twitch.tv/console
-  twitchClientId: "INCOLLA_QUI_IL_CLIENT_ID",
+  twitchClientId:  5ly13axf59gcb5fhpzthn4v7so6u6x,
 
   // --- KICK --------------------------------------------------
   // Apri https://kick.com/api/v2/channels/cuzzi00 e copia:
   //  - il primo "id" in alto  -> kickChannelId
   //  - "chatroom": { "id": ... } -> kickChatroomId
   // Lascia 0 per disattivare Kick.
-  kickChannelId: 0,
-  kickChatroomId: 0,
+  kickChannelId: 107633678
+  kickChatroomId: 107344171
 
   // --- DURATA E VOLUME ---------------------------------------
   durataAlertSecondi: 6,     // quanto resta a schermo un alert
@@ -44,7 +44,7 @@ window.ALERT_CONFIG = {
     "Esempio premio": "suono-premio.mp3",
     // "Urlo spaventoso": "urlo.mp3",
     // "Applauso": "applauso.mp3",
-  },
+  }"Sirena": "Cuzzi 118.ogg",
 
   // Se true, i riscattabili mostrano anche il riquadro a schermo.
   // Se false, suonano soltanto (utile per i sound alert IRL).
