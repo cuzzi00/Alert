@@ -8,7 +8,7 @@ window.ALERT_CONFIG = {
 
   // --- TWITCH ------------------------------------------------
   // Client ID dell'app creata su https://dev.twitch.tv/console
-  twitchClientId:  5ly13axf59gcb5fhpzthn4v7so6u6x,
+  twitchClientId: 5ly13axf59gcb5fhpzthn4v7so6u6x,
 
   // --- KICK --------------------------------------------------
   // Apri https://kick.com/api/v2/channels/cuzzi00 e copia:
