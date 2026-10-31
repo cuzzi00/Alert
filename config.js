@@ -15,8 +15,8 @@ window.ALERT_CONFIG = {
   //  - il primo "id" in alto  -> kickChannelId
   //  - "chatroom": { "id": ... } -> kickChatroomId
   // Lascia 0 per disattivare Kick.
-  kickChannelId: 107633678
-  kickChatroomId: 107344171
+  kickChannelId: 107633678,
+  kickChatroomId: 107344171,
 
   // --- DURATA E VOLUME ---------------------------------------
   durataAlertSecondi: 6,     // quanto resta a schermo un alert
