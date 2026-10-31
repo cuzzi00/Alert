@@ -6,7 +6,6 @@
 <title>Alert CUZZI00</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
-<script src="config.js"></script>
 <style>
   :root{
     --ametista:#9b6dff;
@@ -74,9 +73,29 @@
 
 <script>
 (() => {
-  const C = window.ALERT_CONFIG || {};
   const hash = new URLSearchParams(location.hash.slice(1));
   const query = new URLSearchParams(location.search);
+  const PREDEFINITI = {
+    kickChannelId: 0, kickChatroomId: 0, durataAlertSecondi: 6, volume: 0.8,
+    suoni: { follow:'suono-follow.mp3', sub:'suono-sub.mp3', resub:'suono-sub.mp3', gift:'suono-gift.mp3',
+             bits:'suono-gift.mp3', kicks:'suono-gift.mp3', raid:'suono-raid.mp3', premio:'suono-premio.mp3' },
+    riscattabili: {}, riscattabiliConRiquadro: true,
+    attivi: { follow:true, sub:true, resub:true, gift:true, bits:true, kicks:true, raid:true, premio:true },
+    posizione: 'alto'
+  };
+  function leggiImpostazioni(){
+    try {
+      const c = hash.get('c'); if (!c) return {};
+      const b64 = c.replace(/-/g,'+').replace(/_/g,'/');
+      const json = decodeURIComponent(escape(atob(b64)));
+      return JSON.parse(json);
+    } catch (e) { console.log('Impostazioni non leggibili', e); return {}; }
+  }
+  const U = leggiImpostazioni();
+  const C = { ...PREDEFINITI, ...U,
+    suoni: { ...PREDEFINITI.suoni, ...(U.suoni || {}) },
+    attivi: { ...PREDEFINITI.attivi, ...(U.attivi || {}) } };
+  const ANTEPRIMA = hash.get('anteprima') === '1';
   const DEBUG = hash.get('debug') === '1' || query.get('debug') === '1';
   const stage = document.getElementById('stage');
   const dbg = document.getElementById('debug');
@@ -123,7 +142,8 @@
   function suona(file){
     return new Promise(res => {
       if (!file) return res(0);
-      const au = new Audio(file);
+      const url = /^https?:/.test(file) ? file : encodeURIComponent(file);
+      const au = new Audio(url);
       au.volume = Math.max(0, Math.min(1, C.volume ?? .8));
       let durata = 0;
       au.addEventListener('loadedmetadata', () => { durata = au.duration || 0; });
@@ -208,7 +228,7 @@
   let twUser = null;
 
   async function twitchStart(){
-    if (!twToken){ log('Twitch: nessun token nel link (fai il login dalla pagina di configurazione)'); return; }
+    if (!twToken){ log('Twitch: non collegata (fai il login dalla pagina delle impostazioni)'); return; }
     try {
       const r = await fetch('https://id.twitch.tv/oauth2/validate', { headers: { Authorization: 'OAuth ' + twToken } });
       if (!r.ok){ log('Twitch: token scaduto o non valido. Rifai il login e aggiorna il link.'); return; }
@@ -307,7 +327,7 @@
 
   function kickStart(){
     const ch = Number(C.kickChannelId), room = Number(C.kickChatroomId);
-    if (!ch && !room){ log('Kick: disattivato (manca kickChannelId/kickChatroomId in config.js)'); return; }
+    if (!ch && !room){ log('Kick: disattivato (mancano i numeri di Kick nelle impostazioni)'); return; }
     const ws = new WebSocket(KICK_WS);
     let ping;
     ws.onopen = () => {
@@ -378,8 +398,7 @@
     }
   }
 
-  twitchStart();
-  kickStart();
+  if (!ANTEPRIMA){ twitchStart(); kickStart(); }
 })();
 </script>
 </body>

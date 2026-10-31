@@ -3,139 +3,382 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Configurazione alert – CUZZI00</title>
+<title>Impostazioni alert – CUZZI00</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
-<script src="config.js"></script>
 <style>
-  body{margin:0;font-family:"Quicksand",system-ui,sans-serif;background:#140b20;color:#efe6ff}
-  main{max-width:760px;margin:0 auto;padding:24px 18px 60px}
-  h1{font-size:1.6rem;margin:.2em 0 .1em;color:#c9a7ff}
-  h2{font-size:1.1rem;margin:0 0 .6em;color:#c9a7ff}
-  p{line-height:1.5}
-  .box{background:#1e1230;border:1px solid #4b2f7a;border-radius:14px;padding:16px 18px;margin:16px 0}
-  button,.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:.65em 1.1em;cursor:pointer;
-    background:#9b6dff;color:#fff;text-decoration:none;display:inline-block;margin:4px 4px 4px 0}
-  button.sec{background:#2d1b47;border:1px solid #9b6dff}
+  :root{--lilla:#c9a7ff;--ametista:#9b6dff;--bordo:#4b2f7a;--card:#1e1230;--fondo:#140b20}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Quicksand",system-ui,sans-serif;background:var(--fondo);color:#efe6ff;font-size:16px}
+  main{max-width:720px;margin:0 auto;padding:20px 16px 120px}
+  h1{font-size:1.6rem;margin:.2em 0;color:var(--lilla)}
+  h2{font-size:1.1rem;margin:0 0 .3em;color:var(--lilla);display:flex;align-items:center;gap:.5em}
+  .card{background:var(--card);border:1px solid var(--bordo);border-radius:16px;padding:16px;margin:14px 0}
+  .aiuto{font-size:.85rem;color:#b9a6d9;margin:.2em 0 .8em;line-height:1.45}
+  label{display:block;font-weight:700;margin:.8em 0 .3em;font-size:.92rem}
+  input[type=text],input[type=number],select{width:100%;font:inherit;padding:.7em .8em;border-radius:10px;
+    background:#0e0717;color:#efe6ff;border:1px solid var(--bordo)}
+  input:focus,select:focus{outline:2px solid var(--ametista);border-color:transparent}
+  button,.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:.7em 1.1em;cursor:pointer;
+    background:var(--ametista);color:#fff;text-decoration:none;display:inline-flex;align-items:center;gap:.4em;margin:6px 6px 0 0}
+  .sec{background:#2d1b47;border:1px solid var(--ametista)}
+  .piccolo{padding:.55em .7em;margin:0}
   .ok{color:#9ff0c0}.ko{color:#ffb3c7}
-  textarea{width:100%;box-sizing:border-box;font:13px ui-monospace,monospace;background:#0e0717;color:#e8dcff;
-    border:1px solid #4b2f7a;border-radius:10px;padding:10px;height:90px}
+  .riga{display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center;margin:0 0 10px;padding:8px;border:1px solid var(--bordo);border-radius:12px}
+  .riga input[type=text]{grid-column:1/-1}
+  .riga2{display:grid;grid-template-columns:7.5em 1fr auto;gap:6px;align-items:center;margin:6px 0}
+  .riga2 span{font-weight:700;font-size:.9rem}
+  .interruttori{display:grid;grid-template-columns:repeat(auto-fill,minmax(9.5em,1fr));gap:6px}
+  .interruttori label,.toggle{display:flex;align-items:center;gap:.5em;font-weight:500;margin:0;
+    background:#0e0717;border:1px solid var(--bordo);border-radius:10px;padding:.6em .7em}
+  input[type=checkbox]{width:1.2em;height:1.2em;accent-color:var(--ametista)}
+  input[type=range]{width:100%;accent-color:var(--ametista)}
   .anteprima{position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;
-    background:linear-gradient(135deg,#3a4a5a,#6b5a4a 60%,#2a3a2a);border:1px solid #4b2f7a}
+    background:linear-gradient(135deg,#3a4a5a,#6b5a4a 60%,#2a3a2a);border:1px solid var(--bordo)}
   .anteprima iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-  small{color:#b9a6d9}
+  .barraLink{position:fixed;left:0;right:0;bottom:0;background:rgba(20,11,32,.96);border-top:1px solid var(--bordo);
+    padding:10px 16px calc(10px + env(safe-area-inset-bottom));backdrop-filter:blur(8px)}
+  .barraLink .dentro{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .barraLink .msg{flex:1;min-width:12em;font-size:.85rem}
+  .avviso{background:#3a1f5c;border:1px solid var(--ametista);border-radius:10px;padding:.5em .8em}
+  code{background:#0e0717;padding:.15em .4em;border-radius:6px;word-break:break-all}
+  .vuoto{color:#b9a6d9;font-size:.9rem;padding:.4em 0}
 </style>
 </head>
 <body>
 <main>
-  <h1>Alert CUZZI00</h1>
-  <p><small>Pagina di configurazione. Il link che generi qui va incollato in Moblin (o in OBS) come sorgente browser.</small></p>
+  <h1>Alert CUZZI00 💎</h1>
+  <p class="aiuto">Tutto si imposta da questa pagina e viene salvato in automatico su questo dispositivo.
+    Quando hai finito, premi <b>Copia link</b> in basso e incollalo in Moblin.</p>
 
-  <div class="box">
-    <h2>1 · Stato configurazione</h2>
-    <div id="stato"></div>
-  </div>
-
-  <div class="box">
-    <h2>2 · Collega Twitch</h2>
-    <p id="twInfo">Non collegata.</p>
+  <!-- TWITCH -->
+  <div class="card">
+    <h2>🟣 Twitch</h2>
+    <label for="clientId">Client ID</label>
+    <input id="clientId" type="text" placeholder="Incolla qui il Client ID da dev.twitch.tv" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <p class="aiuto">Su dev.twitch.tv, come <b>OAuth Redirect URL</b> della tua app deve esserci esattamente:<br>
+      <code id="redirect"></code> <button class="sec piccolo" id="copiaRedirect">Copia</button></p>
+    <div id="twStato" class="vuoto">Non collegata.</div>
     <button id="login">Accedi con Twitch</button>
-    <p><small>URL di reindirizzamento da registrare su dev.twitch.tv (copialo identico):</small><br>
-      <code id="redirect"></code></p>
+    <button id="esci" class="sec" style="display:none">Scollega</button>
   </div>
 
-  <div class="box">
-    <h2>3 · Il tuo link per la sorgente browser</h2>
-    <textarea id="link" readonly placeholder="Collega Twitch (o configura Kick) per generare il link"></textarea>
-    <button id="copia">Copia link</button>
-    <button id="copiaDebug" class="sec">Copia link con diagnostica</button>
-    <p><small>⚠️ Il link contiene la tua chiave di accesso Twitch: non mostrarlo in live e non condividerlo.</small></p>
+  <!-- KICK -->
+  <div class="card">
+    <h2>🟢 Kick</h2>
+    <p class="aiuto">Apri <a href="https://kick.com/api/v2/channels/cuzzi00" target="_blank" style="color:var(--lilla)">questa pagina</a>:
+      il primo <code>"id"</code> in alto è il <b>numero canale</b>, l'<code>"id"</code> dentro <code>"chatroom"</code> è il <b>numero chat</b>.
+      Lascia vuoto per disattivare Kick.</p>
+    <label for="kickCh">Numero canale</label>
+    <input id="kickCh" type="number" inputmode="numeric" placeholder="es. 107633678">
+    <label for="kickRoom">Numero chat</label>
+    <input id="kickRoom" type="number" inputmode="numeric" placeholder="es. 107344171">
   </div>
 
-  <div class="box">
-    <h2>4 · Prova gli alert</h2>
-    <div class="anteprima"><iframe id="prev" src="overlay.html" allow="autoplay"></iframe></div>
-    <p>
-      <button class="sec" data-t="follow">Follow</button>
-      <button class="sec" data-t="sub">Sub</button>
-      <button class="sec" data-t="resub">Resub</button>
-      <button class="sec" data-t="gift">Sub regalati</button>
-      <button class="sec" data-t="bits">Bits</button>
-      <button class="sec" data-t="kicks">Kicks</button>
-      <button class="sec" data-t="raid">Raid</button>
-      <button class="sec" data-t="premio">Riscattabile</button>
-    </p>
-    <p><small>L'anteprima usa solo dati finti. Per una prova reale riscatta un tuo premio su Twitch/Kick con il link aperto in Moblin.</small></p>
+  <!-- AUDIO DISPONIBILI -->
+  <div class="card">
+    <h2>🎵 I tuoi file audio</h2>
+    <p class="aiuto">Per aggiungere suoni caricali nel repository GitHub (anche più file insieme), poi premi <b>Aggiorna elenco</b>.
+      Un file appena caricato può impiegare 1–2 minuti prima di suonare.</p>
+    <a class="btn" id="caricaAudio" target="_blank">⬆️ Carica audio su GitHub</a>
+    <button class="sec" id="aggiornaAudio">🔄 Aggiorna elenco</button>
+    <div id="audioStato" class="vuoto"></div>
+  </div>
+
+  <!-- RISCATTABILI -->
+  <div class="card">
+    <h2>🎁 Riscattabili</h2>
+    <p class="aiuto">Scrivi il nome del premio <b>uguale</b> a come appare su Twitch/Kick e scegli il suono.
+      Con ▶ ascolti il suono, con ✕ elimini la riga.</p>
+    <div id="listaRisc"></div>
+    <button id="aggiungiRisc">＋ Aggiungi riscattabile</button>
+    <button id="importaTwitch" class="sec">⬇️ Importa premi da Twitch</button>
+    <label class="toggle" style="margin-top:12px"><input type="checkbox" id="riquadroRisc"> Mostra anche il riquadro a schermo (se spento, suona soltanto)</label>
+  </div>
+
+  <!-- ALERT FISSI -->
+  <div class="card">
+    <h2>🔔 Suoni degli altri alert</h2>
+    <div id="listaFissi"></div>
+    <label>Alert attivi</label>
+    <div class="interruttori" id="attivi"></div>
+  </div>
+
+  <!-- ASPETTO -->
+  <div class="card">
+    <h2>✨ Aspetto</h2>
+    <label for="posizione">Posizione a schermo</label>
+    <select id="posizione">
+      <option value="alto">In alto</option><option value="centro">Al centro</option><option value="basso">In basso</option>
+    </select>
+    <label for="durata">Durata a schermo: <span id="durataV"></span> secondi</label>
+    <input id="durata" type="range" min="3" max="15" step="1">
+    <label for="volume">Volume: <span id="volumeV"></span>%</label>
+    <input id="volume" type="range" min="0" max="100" step="5">
+  </div>
+
+  <!-- PROVA -->
+  <div class="card">
+    <h2>👀 Prova</h2>
+    <div class="anteprima"><iframe id="prev" allow="autoplay"></iframe></div>
+    <div id="pulsantiProva"></div>
+    <p class="aiuto">L'anteprima usa nomi finti ma i tuoi suoni e le tue impostazioni.</p>
   </div>
 </main>
 
+<div class="barraLink">
+  <div class="dentro">
+    <div class="msg" id="linkMsg">Il link per Moblin è pronto.</div>
+    <button id="copiaLink">📋 Copia link</button>
+    <button id="copiaDebug" class="sec">🔍 Link diagnostica</button>
+  </div>
+</div>
+
 <script>
-  const C = window.ALERT_CONFIG || {};
-  const SCOPES = ['channel:read:redemptions','moderator:read:followers','channel:read:subscriptions','bits:read'];
-  const redirect = location.origin + location.pathname.replace(/index\.html$/, '');
-  document.getElementById('redirect').textContent = redirect;
+// ---------- IMPOSTAZIONI ----------
+const NOMI = { follow:'Follow', sub:'Sub', resub:'Resub', gift:'Sub regalati', bits:'Bits', kicks:'Kicks', raid:'Raid', premio:'Riscattabile (suono base)' };
+const PREDEFINITE = {
+  clientId: '', kickChannelId: 107633678, kickChatroomId: 107344171,
+  durataAlertSecondi: 6, volume: 0.8, posizione: 'alto', riscattabiliConRiquadro: true,
+  suoni: { follow:'suono-follow.mp3', sub:'suono-sub.mp3', resub:'suono-sub.mp3', gift:'suono-gift.mp3',
+           bits:'suono-gift.mp3', kicks:'suono-gift.mp3', raid:'suono-raid.mp3', premio:'suono-premio.mp3' },
+  attivi: { follow:true, sub:true, resub:true, gift:true, bits:true, kicks:true, raid:true, premio:true },
+  riscattabili: [] // [{nome, file}]
+};
+const mem = {
+  get(k){ try { return localStorage.getItem(k); } catch { return null; } },
+  set(k,v){ try { localStorage.setItem(k,v); } catch {} },
+  del(k){ try { localStorage.removeItem(k); } catch {} }
+};
+let S;
+try { S = JSON.parse(mem.get('impostazioni')) || {}; } catch { S = {}; }
+S = { ...PREDEFINITE, ...S, suoni:{...PREDEFINITE.suoni, ...(S.suoni||{})}, attivi:{...PREDEFINITE.attivi, ...(S.attivi||{})} };
+if (!Array.isArray(S.riscattabili)) S.riscattabili = [];
 
-  const stato = document.getElementById('stato');
-  const okId = C.twitchClientId && !/INCOLLA/.test(C.twitchClientId);
-  const okKick = Number(C.kickChannelId) || Number(C.kickChatroomId);
-  const nRisc = Object.keys(C.riscattabili || {}).length;
-  stato.innerHTML = `
-    <div class="${okId ? 'ok' : 'ko'}">${okId ? '✔' : '✘'} Twitch Client ID ${okId ? 'presente' : 'mancante in config.js'}</div>
-    <div class="${okKick ? 'ok' : 'ko'}">${okKick ? '✔' : '–'} Kick ${okKick ? `attivo (canale ${C.kickChannelId}, chat ${C.kickChatroomId})` : 'non configurato'}</div>
-    <div class="ok">✔ ${nRisc} riscattabili con suono: ${Object.keys(C.riscattabili || {}).map(k => `“${k}”`).join(', ') || 'nessuno'}</div>`;
+let audioFiles = [];
+let token = mem.get('twToken');
+let twInfo = null;
+let ultimoLinkCopiato = mem.get('ultimoLink');
 
-  let token = sessionStorageGet('tw');
-  const h = new URLSearchParams(location.hash.slice(1));
-  if (h.get('access_token')){
-    token = h.get('access_token');
-    sessionStorageSet('tw', token);
-    history.replaceState(null, '', location.pathname);
-  }
-  if (h.get('error')) document.getElementById('twInfo').innerHTML = `<span class="ko">Errore: ${h.get('error_description') || h.get('error')}</span>`;
+const $ = id => document.getElementById(id);
+const redirect = location.origin + location.pathname.replace(/index\.html$/, '');
+$('redirect').textContent = redirect;
 
-  document.getElementById('login').onclick = () => {
-    if (!okId){ alert('Prima inserisci il Client ID in config.js'); return; }
-    const u = new URL('https://id.twitch.tv/oauth2/authorize');
-    u.searchParams.set('response_type', 'token');
-    u.searchParams.set('client_id', C.twitchClientId);
-    u.searchParams.set('redirect_uri', redirect);
-    u.searchParams.set('scope', SCOPES.join(' '));
-    u.searchParams.set('force_verify', 'true');
-    location.href = u.toString();
+// repository GitHub dedotto dall'indirizzo
+const owner = location.hostname.split('.')[0];
+const repo = location.pathname.split('/')[1] || (owner + '.github.io');
+$('caricaAudio').href = `https://github.com/${owner}/${repo}/upload/main`;
+
+// ---------- SALVATAGGIO E LINK ----------
+function b64url(obj){
+  const s = unescape(encodeURIComponent(JSON.stringify(obj)));
+  return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function perOverlay(){
+  const risc = {};
+  S.riscattabili.forEach(r => { if (r.nome.trim()) risc[r.nome.trim()] = r.file; });
+  return {
+    kickChannelId: Number(S.kickChannelId) || 0, kickChatroomId: Number(S.kickChatroomId) || 0,
+    durataAlertSecondi: S.durataAlertSecondi, volume: S.volume, posizione: S.posizione,
+    riscattabiliConRiquadro: S.riscattabiliConRiquadro, suoni: S.suoni, attivi: S.attivi, riscattabili: risc
   };
-
-  async function aggiorna(){
-    const info = document.getElementById('twInfo');
-    if (token){
-      const r = await fetch('https://id.twitch.tv/oauth2/validate', { headers: { Authorization: 'OAuth ' + token } }).catch(() => null);
-      if (r && r.ok){
-        const v = await r.json();
-        info.innerHTML = `<span class="ok">✔ Collegata come <b>${v.login}</b> · il collegamento scade tra circa ${Math.round(v.expires_in / 86400)} giorni</span>`;
-      } else { info.innerHTML = '<span class="ko">Collegamento scaduto: accedi di nuovo.</span>'; token = null; }
-    }
-    if (token || okKick){
-      const base = redirect + 'overlay.html';
-      document.getElementById('link').value = base + (token ? '#tw=' + token : '');
-    }
+}
+function linkOverlay(debug){
+  let h = 'c=' + b64url(perOverlay());
+  if (token) h += '&tw=' + token;
+  if (debug) h += '&debug=1';
+  return redirect + 'overlay.html#' + h;
+}
+let timerAnteprima;
+function salva(){
+  mem.set('impostazioni', JSON.stringify(S));
+  const msg = $('linkMsg');
+  if (ultimoLinkCopiato && ultimoLinkCopiato !== linkOverlay(false)){
+    msg.innerHTML = '<span class="avviso">⚠️ Hai fatto modifiche: copia di nuovo il link e aggiornalo in Moblin.</span>';
+  } else if (!token && !S.kickChannelId){
+    msg.textContent = 'Collega Twitch o inserisci i numeri di Kick.';
+  } else {
+    msg.textContent = token ? 'Link pronto ✔' : 'Link pronto (solo Kick: Twitch non collegata).';
   }
-  aggiorna();
+  clearTimeout(timerAnteprima);
+  timerAnteprima = setTimeout(() => {
+    $('prev').src = 'overlay.html#anteprima=1&c=' + b64url(perOverlay()) + '&r=' + Date.now();
+  }, 400);
+}
 
-  function copia(testo){
-    navigator.clipboard?.writeText(testo).then(() => alert('Link copiato ✔'), () => {
-      const t = document.getElementById('link'); t.select(); document.execCommand('copy'); alert('Link copiato ✔');
-    });
+// ---------- TWITCH ----------
+$('clientId').value = S.clientId;
+$('clientId').addEventListener('input', e => { S.clientId = e.target.value.replace(/[\s"“”']/g,''); salva(); });
+$('copiaRedirect').onclick = () => copia(redirect, 'Indirizzo copiato ✔');
+
+const h = new URLSearchParams(location.hash.slice(1));
+if (h.get('access_token')){ token = h.get('access_token'); mem.set('twToken', token); history.replaceState(null,'',location.pathname); }
+if (h.get('error')){ $('twStato').innerHTML = `<span class="ko">Errore Twitch: ${h.get('error_description') || h.get('error')}</span>`; history.replaceState(null,'',location.pathname); }
+
+$('login').onclick = () => {
+  const id = $('clientId').value.replace(/[\s"“”']/g,'');
+  if (!id){ alert('Prima incolla il Client ID'); $('clientId').focus(); return; }
+  S.clientId = id; salva();
+  const u = new URL('https://id.twitch.tv/oauth2/authorize');
+  u.searchParams.set('response_type','token');
+  u.searchParams.set('client_id', id);
+  u.searchParams.set('redirect_uri', redirect);
+  u.searchParams.set('scope', 'channel:read:redemptions moderator:read:followers channel:read:subscriptions bits:read');
+  u.searchParams.set('force_verify','true');
+  location.href = u.toString();
+};
+$('esci').onclick = () => { token = null; twInfo = null; mem.del('twToken'); controllaTwitch(); salva(); };
+
+async function controllaTwitch(){
+  const st = $('twStato');
+  if (!token){ st.className='vuoto'; st.textContent='Non collegata.'; $('esci').style.display='none'; $('login').textContent='Accedi con Twitch'; return; }
+  const r = await fetch('https://id.twitch.tv/oauth2/validate', { headers:{ Authorization:'OAuth ' + token } }).catch(() => null);
+  if (r && r.ok){
+    twInfo = await r.json();
+    st.className='ok';
+    st.innerHTML = `✔ Collegata come <b>${twInfo.login}</b> · scade tra circa ${Math.round(twInfo.expires_in/86400)} giorni`;
+    $('esci').style.display=''; $('login').textContent='Ricollega';
+  } else {
+    token = null; mem.del('twToken'); st.className='ko'; st.textContent='Collegamento scaduto: premi Accedi con Twitch.';
   }
-  document.getElementById('copia').onclick = () => { const v = document.getElementById('link').value; if (v) copia(v); };
-  document.getElementById('copiaDebug').onclick = () => {
-    const v = document.getElementById('link').value; if (!v) return;
-    copia(v + (v.includes('#') ? '&' : '#') + 'debug=1');
-  };
+  salva();
+}
 
-  document.querySelectorAll('[data-t]').forEach(b => b.onclick = () => {
-    document.getElementById('prev').contentWindow.postMessage({ tipoTest: b.dataset.t }, '*');
+$('importaTwitch').onclick = async () => {
+  if (!twInfo){ alert('Prima collega Twitch'); return; }
+  const r = await fetch('https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id=' + twInfo.user_id,
+    { headers:{ Authorization:'Bearer ' + token, 'Client-Id': twInfo.client_id } }).catch(() => null);
+  if (!r || !r.ok){ const t = r ? await r.json().catch(()=>({})) : {}; alert('Non riesco a leggere i premi: ' + (t.message || 'errore di rete') + '\n(Servono i punti canale attivi, cioè essere Affiliate.)'); return; }
+  const dati = (await r.json()).data || [];
+  let nuovi = 0;
+  dati.forEach(p => {
+    if (!S.riscattabili.some(x => x.nome.trim().toLowerCase() === p.title.trim().toLowerCase())){
+      S.riscattabili.push({ nome: p.title, file: S.suoni.premio }); nuovi++;
+    }
   });
+  disegnaRisc(); salva();
+  alert(nuovi ? `Aggiunti ${nuovi} premi ✔ Ora scegli il suono per ognuno.` : 'Nessun premio nuovo da aggiungere.');
+};
 
-  function sessionStorageGet(k){ try { return sessionStorage.getItem(k); } catch { return null; } }
-  function sessionStorageSet(k, v){ try { sessionStorage.setItem(k, v); } catch {} }
+// ---------- AUDIO ----------
+async function caricaElencoAudio(){
+  const st = $('audioStato');
+  st.textContent = 'Carico l\'elenco…';
+  try {
+    const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/`);
+    if (!r.ok) throw new Error(r.status);
+    const files = await r.json();
+    audioFiles = files.filter(f => f.type === 'file' && /\.(mp3|wav|ogg|m4a|aac)$/i.test(f.name)).map(f => f.name).sort((a,b)=>a.localeCompare(b));
+    st.className = 'ok';
+    st.textContent = `✔ ${audioFiles.length} file audio trovati`;
+  } catch (e){
+    st.className = 'ko';
+    st.textContent = 'Non riesco a leggere l\'elenco da GitHub (riprova tra poco). Uso i suoni già scelti.';
+    audioFiles = [...new Set([...Object.values(S.suoni), ...S.riscattabili.map(r => r.file)])].filter(Boolean);
+  }
+  disegnaRisc(); disegnaFissi();
+}
+$('aggiornaAudio').onclick = caricaElencoAudio;
+
+function selectAudio(valore, onChange){
+  const s = document.createElement('select');
+  const opzioni = [...new Set([...audioFiles, valore].filter(Boolean))];
+  s.innerHTML = '<option value="">— nessun suono —</option>' + opzioni.map(f => `<option>${f.replace(/</g,'&lt;')}</option>`).join('');
+  s.value = valore || '';
+  s.onchange = () => onChange(s.value);
+  return s;
+}
+let player;
+function ascolta(file){
+  if (player){ player.pause(); }
+  if (!file) return;
+  player = new Audio(encodeURIComponent(file));
+  player.volume = S.volume;
+  player.play().catch(() => alert('Non riesco a riprodurre "' + file + '". Se l\'hai appena caricato aspetta 1–2 minuti.'));
+}
+function bottone(testo, cls, fn){ const b = document.createElement('button'); b.textContent = testo; b.className = cls; b.onclick = fn; return b; }
+
+// ---------- RISCATTABILI ----------
+function disegnaRisc(){
+  const box = $('listaRisc'); box.innerHTML = '';
+  if (!S.riscattabili.length){ box.innerHTML = '<div class="vuoto">Nessun riscattabile ancora. Premi “Aggiungi” o “Importa da Twitch”.</div>'; }
+  S.riscattabili.forEach((r, i) => {
+    const riga = document.createElement('div'); riga.className = 'riga';
+    const nome = document.createElement('input'); nome.type = 'text'; nome.placeholder = 'Nome del premio'; nome.value = r.nome;
+    nome.oninput = () => { r.nome = nome.value; salva(); };
+    riga.append(nome,
+      selectAudio(r.file, v => { r.file = v; salva(); }),
+      bottone('▶', 'sec piccolo', () => ascolta(r.file)),
+      bottone('✕', 'sec piccolo', () => { S.riscattabili.splice(i,1); disegnaRisc(); salva(); }));
+    box.appendChild(riga);
+  });
+}
+$('aggiungiRisc').onclick = () => {
+  S.riscattabili.push({ nome:'', file: audioFiles[0] || S.suoni.premio });
+  disegnaRisc(); salva();
+  const inputs = $('listaRisc').querySelectorAll('input[type=text]'); inputs[inputs.length-1]?.focus();
+};
+$('riquadroRisc').checked = S.riscattabiliConRiquadro;
+$('riquadroRisc').onchange = e => { S.riscattabiliConRiquadro = e.target.checked; salva(); };
+
+// ---------- ALERT FISSI ----------
+function disegnaFissi(){
+  const box = $('listaFissi'); box.innerHTML = '';
+  Object.keys(NOMI).forEach(k => {
+    const riga = document.createElement('div'); riga.className = 'riga2';
+    const lab = document.createElement('span'); lab.textContent = NOMI[k];
+    riga.append(lab, selectAudio(S.suoni[k], v => { S.suoni[k] = v; salva(); }), bottone('▶', 'sec piccolo', () => ascolta(S.suoni[k])));
+    box.appendChild(riga);
+  });
+}
+const att = $('attivi');
+Object.keys(NOMI).forEach(k => {
+  const l = document.createElement('label');
+  l.innerHTML = `<input type="checkbox"> ${NOMI[k].replace(' (suono base)','')}`;
+  const c = l.querySelector('input'); c.checked = S.attivi[k] !== false;
+  c.onchange = () => { S.attivi[k] = c.checked; salva(); };
+  att.appendChild(l);
+});
+
+// ---------- KICK E ASPETTO ----------
+$('kickCh').value = S.kickChannelId || '';
+$('kickRoom').value = S.kickChatroomId || '';
+$('kickCh').oninput = e => { S.kickChannelId = Number(e.target.value) || 0; salva(); };
+$('kickRoom').oninput = e => { S.kickChatroomId = Number(e.target.value) || 0; salva(); };
+$('posizione').value = S.posizione;
+$('posizione').onchange = e => { S.posizione = e.target.value; salva(); };
+$('durata').value = S.durataAlertSecondi; $('durataV').textContent = S.durataAlertSecondi;
+$('durata').oninput = e => { S.durataAlertSecondi = Number(e.target.value); $('durataV').textContent = e.target.value; salva(); };
+$('volume').value = Math.round(S.volume*100); $('volumeV').textContent = Math.round(S.volume*100);
+$('volume').oninput = e => { S.volume = Number(e.target.value)/100; $('volumeV').textContent = e.target.value; salva(); };
+
+// ---------- PROVA ----------
+Object.keys(NOMI).forEach(k => {
+  $('pulsantiProva').appendChild(bottone(NOMI[k].replace(' (suono base)',''), 'sec', () => $('prev').contentWindow.postMessage({ tipoTest:k }, '*')));
+});
+
+// ---------- COPIA ----------
+function copia(testo, conferma){
+  const ok = () => alert(conferma || 'Copiato ✔');
+  if (navigator.clipboard && window.isSecureContext){ navigator.clipboard.writeText(testo).then(ok, () => fallback()); }
+  else fallback();
+  function fallback(){
+    const t = document.createElement('textarea'); t.value = testo; document.body.appendChild(t); t.select();
+    try { document.execCommand('copy'); ok(); } catch { prompt('Copia questo testo:', testo); }
+    t.remove();
+  }
+}
+$('copiaLink').onclick = () => {
+  if (!token && !S.kickChannelId){ alert('Prima collega Twitch o inserisci i numeri di Kick.'); return; }
+  const l = linkOverlay(false); ultimoLinkCopiato = l; mem.set('ultimoLink', l);
+  copia(l, 'Link copiato ✔ Incollalo in Moblin (widget Browser).\n\nNon mostrarlo in live: contiene la tua chiave Twitch.');
+  salva();
+};
+$('copiaDebug').onclick = () => copia(linkOverlay(true), 'Link diagnostica copiato ✔ Mostra un riquadro con tutto quello che arriva. Usalo solo per le prove.');
+
+// ---------- AVVIO ----------
+disegnaRisc(); disegnaFissi(); salva();
+caricaElencoAudio();
+controllaTwitch();
 </script>
 </body>
 </html>
