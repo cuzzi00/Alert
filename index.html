@@ -53,24 +53,24 @@
   <!-- TWITCH -->
   <div class="card">
     <h2>🟣 Twitch</h2>
-    <label for="clientId">Client ID</label>
-    <input id="clientId" type="text" placeholder="Incolla qui il Client ID da dev.twitch.tv" autocomplete="off" autocapitalize="off" spellcheck="false">
-    <p class="aiuto">Su dev.twitch.tv, come <b>OAuth Redirect URL</b> della tua app deve esserci esattamente:<br>
-      <code id="redirect"></code> <button class="sec piccolo" id="copiaRedirect">Copia</button></p>
     <div id="twStato" class="vuoto">Non collegata.</div>
-    <button id="login">Accedi con Twitch</button>
     <button id="esci" class="sec" style="display:none">Scollega</button>
-    <details style="margin-top:12px">
-      <summary style="cursor:pointer;font-weight:700;color:var(--lilla)">La pagina si chiude o si apre un'altra app?</summary>
-      <ol class="aiuto" style="padding-left:1.2em">
-        <li>Premi <b>Copia link di accesso</b>.</li>
-        <li>Apri una <b>nuova scheda</b> del browser, tieni premuto sulla barra degli indirizzi, <b>Incolla e vai</b>.</li>
-        <li>Accedi a Twitch e autorizza: tornerai qui già collegata.</li>
-      </ol>
-      <button class="sec" id="copiaAccesso">📋 Copia link di accesso</button>
-      <p class="aiuto">Se dopo l'accesso finisci su una pagina che non si carica, copia l'indirizzo completo di quella pagina e incollalo qui:</p>
-      <input id="incollaRitorno" type="text" placeholder="Incolla l'indirizzo che contiene access_token" autocomplete="off" autocapitalize="off" spellcheck="false">
-    </details>
+
+    <div id="passiTwitch">
+      <label for="clientId">① Client ID</label>
+      <input id="clientId" type="text" placeholder="Incolla qui il Client ID" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <p class="aiuto">Su dev.twitch.tv, nella tua app, alla voce <b>OAuth Redirect URLs</b> aggiungi questo indirizzo e salva:<br>
+        <code>http://localhost</code> <button class="sec piccolo" id="copiaRedirect">Copia</button></p>
+
+      <label>② Autorizza su Twitch</label>
+      <button id="copiaAccesso">📋 Copia link di accesso</button>
+      <p class="aiuto">Apri una nuova scheda, incolla il link nella barra degli indirizzi e vai. Accedi e premi <b>Autorizza</b>.<br>
+        Dopo comparirà una pagina che <b>non si carica</b> (“impossibile connettersi”): <b>è normale</b>.</p>
+
+      <label for="incollaRitorno">③ Copia l'indirizzo di quella pagina e incollalo qui</label>
+      <input id="incollaRitorno" type="text" placeholder="http://localhost/#access_token=..." autocomplete="off" autocapitalize="off" spellcheck="false">
+      <p class="aiuto">Tocca la barra degli indirizzi della pagina che non si carica, seleziona tutto e copia.</p>
+    </div>
   </div>
 
   <!-- KICK -->
@@ -172,7 +172,6 @@ let ultimoLinkCopiato = mem.get('ultimoLink');
 
 const $ = id => document.getElementById(id);
 const redirect = location.origin + location.pathname.replace(/index\.html$/, '');
-$('redirect').textContent = redirect;
 
 // repository GitHub dedotto dall'indirizzo
 const owner = location.hostname.split('.')[0];
@@ -219,11 +218,7 @@ function salva(){
 // ---------- TWITCH ----------
 $('clientId').value = S.clientId;
 $('clientId').addEventListener('input', e => { S.clientId = e.target.value.replace(/[\s"“”']/g,''); salva(); });
-$('copiaRedirect').onclick = () => copia(redirect, 'Indirizzo copiato ✔');
-
-const h = new URLSearchParams(location.hash.slice(1));
-if (h.get('access_token')){ token = h.get('access_token'); mem.set('twToken', token); history.replaceState(null,'',location.pathname); }
-if (h.get('error')){ $('twStato').innerHTML = `<span class="ko">Errore Twitch: ${h.get('error_description') || h.get('error')}</span>`; history.replaceState(null,'',location.pathname); }
+$('copiaRedirect').onclick = () => copia('http://localhost', 'Copiato ✔ Incollalo su dev.twitch.tv in OAuth Redirect URLs e premi Salva.');
 
 function linkAccesso(){
   const id = $('clientId').value.replace(/[\s"“”']/g,'');
@@ -232,31 +227,34 @@ function linkAccesso(){
   const u = new URL('https://id.twitch.tv/oauth2/authorize');
   u.searchParams.set('response_type','token');
   u.searchParams.set('client_id', id);
-  u.searchParams.set('redirect_uri', redirect);
+  u.searchParams.set('redirect_uri', 'http://localhost');
   u.searchParams.set('scope', 'channel:read:redemptions moderator:read:followers channel:read:subscriptions bits:read');
   u.searchParams.set('force_verify','true');
   return u.toString();
 }
-$('login').onclick = () => { const u = linkAccesso(); if (u) location.href = u; };
-$('copiaAccesso').onclick = () => { const u = linkAccesso(); if (u) copia(u, 'Link di accesso copiato ✔\nOra apri una nuova scheda, tieni premuto sulla barra degli indirizzi e scegli "Incolla e vai".'); };
+$('copiaAccesso').onclick = () => { const u = linkAccesso(); if (u) copia(u, 'Link copiato ✔\nApri una nuova scheda, tieni premuto sulla barra degli indirizzi e scegli "Incolla e vai".'); };
 $('incollaRitorno').addEventListener('input', e => {
-  const m = e.target.value.match(/access_token=([a-z0-9]+)/i);
-  if (m){ token = m[1]; mem.set('twToken', token); e.target.value = ''; controllaTwitch(); }
-  else if (/error=/.test(e.target.value)){ alert('Twitch ha risposto con un errore: ' + decodeURIComponent((e.target.value.match(/error_description=([^&]+)/)||[])[1]||'').replace(/\+/g,' ')); }
+  const v = e.target.value;
+  const m = v.match(/access_token=([a-z0-9]+)/i);
+  if (m){ token = m[1]; mem.set('twToken', token); e.target.value = ''; controllaTwitch(); return; }
+  if (/error/.test(v)){
+    const d = decodeURIComponent((v.match(/error_description=([^&]+)/)||[])[1]||'').replace(/\+/g,' ');
+    alert('Twitch ha dato un errore: ' + d + (/redirect/i.test(d) ? '\n\nControlla di aver aggiunto http://localhost nelle OAuth Redirect URLs e di aver premuto Salva.' : ''));
+  }
 });
 $('esci').onclick = () => { token = null; twInfo = null; mem.del('twToken'); controllaTwitch(); salva(); };
 
 async function controllaTwitch(){
   const st = $('twStato');
-  if (!token){ st.className='vuoto'; st.textContent='Non collegata.'; $('esci').style.display='none'; $('login').textContent='Accedi con Twitch'; return; }
+  if (!token){ st.className='vuoto'; st.textContent='Non collegata.'; $('esci').style.display='none'; $('passiTwitch').style.display=''; return; }
   const r = await fetch('https://id.twitch.tv/oauth2/validate', { headers:{ Authorization:'OAuth ' + token } }).catch(() => null);
   if (r && r.ok){
     twInfo = await r.json();
     st.className='ok';
     st.innerHTML = `✔ Collegata come <b>${twInfo.login}</b> · scade tra circa ${Math.round(twInfo.expires_in/86400)} giorni`;
-    $('esci').style.display=''; $('login').textContent='Ricollega';
+    $('esci').style.display=''; $('passiTwitch').style.display='none';
   } else {
-    token = null; mem.del('twToken'); st.className='ko'; st.textContent='Collegamento scaduto: premi Accedi con Twitch.';
+    token = null; mem.del('twToken'); st.className='ko'; st.textContent='Collegamento scaduto: rifai i passaggi qui sotto.'; $('passiTwitch').style.display='';
   }
   salva();
 }
