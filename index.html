@@ -148,7 +148,7 @@
 // ---------- IMPOSTAZIONI ----------
 const NOMI = { follow:'Follow', sub:'Sub', resub:'Resub', gift:'Sub regalati', bits:'Bits', kicks:'Kicks', raid:'Raid', premio:'Riscattabile (suono base)' };
 const PREDEFINITE = {
-  clientId: '', kickChannelId: 107633678, kickChatroomId: 107344171,
+  clientId: '5ly13axf59gcb5fhpzthn4v7so6u6x', kickChannelId: 107633678, kickChatroomId: 107344171,
   durataAlertSecondi: 6, volume: 0.8, posizione: 'alto', riscattabiliConRiquadro: true,
   suoni: { follow:'suono-follow.mp3', sub:'suono-sub.mp3', resub:'suono-sub.mp3', gift:'suono-gift.mp3',
            bits:'suono-gift.mp3', kicks:'suono-gift.mp3', raid:'suono-raid.mp3', premio:'suono-premio.mp3' },
@@ -162,6 +162,7 @@ const mem = {
 };
 let S;
 try { S = JSON.parse(mem.get('impostazioni')) || {}; } catch { S = {}; }
+if (!S.clientId) delete S.clientId;
 S = { ...PREDEFINITE, ...S, suoni:{...PREDEFINITE.suoni, ...(S.suoni||{})}, attivi:{...PREDEFINITE.attivi, ...(S.attivi||{})} };
 if (!Array.isArray(S.riscattabili)) S.riscattabili = [];
 
