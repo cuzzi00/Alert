@@ -60,6 +60,17 @@
     <div id="twStato" class="vuoto">Non collegata.</div>
     <button id="login">Accedi con Twitch</button>
     <button id="esci" class="sec" style="display:none">Scollega</button>
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-weight:700;color:var(--lilla)">La pagina si chiude o si apre un'altra app?</summary>
+      <ol class="aiuto" style="padding-left:1.2em">
+        <li>Premi <b>Copia link di accesso</b>.</li>
+        <li>Apri una <b>nuova scheda</b> del browser, tieni premuto sulla barra degli indirizzi, <b>Incolla e vai</b>.</li>
+        <li>Accedi a Twitch e autorizza: tornerai qui già collegata.</li>
+      </ol>
+      <button class="sec" id="copiaAccesso">📋 Copia link di accesso</button>
+      <p class="aiuto">Se dopo l'accesso finisci su una pagina che non si carica, copia l'indirizzo completo di quella pagina e incollalo qui:</p>
+      <input id="incollaRitorno" type="text" placeholder="Incolla l'indirizzo che contiene access_token" autocomplete="off" autocapitalize="off" spellcheck="false">
+    </details>
   </div>
 
   <!-- KICK -->
@@ -214,9 +225,9 @@ const h = new URLSearchParams(location.hash.slice(1));
 if (h.get('access_token')){ token = h.get('access_token'); mem.set('twToken', token); history.replaceState(null,'',location.pathname); }
 if (h.get('error')){ $('twStato').innerHTML = `<span class="ko">Errore Twitch: ${h.get('error_description') || h.get('error')}</span>`; history.replaceState(null,'',location.pathname); }
 
-$('login').onclick = () => {
+function linkAccesso(){
   const id = $('clientId').value.replace(/[\s"“”']/g,'');
-  if (!id){ alert('Prima incolla il Client ID'); $('clientId').focus(); return; }
+  if (!id){ alert('Prima incolla il Client ID'); $('clientId').focus(); return null; }
   S.clientId = id; salva();
   const u = new URL('https://id.twitch.tv/oauth2/authorize');
   u.searchParams.set('response_type','token');
@@ -224,8 +235,15 @@ $('login').onclick = () => {
   u.searchParams.set('redirect_uri', redirect);
   u.searchParams.set('scope', 'channel:read:redemptions moderator:read:followers channel:read:subscriptions bits:read');
   u.searchParams.set('force_verify','true');
-  location.href = u.toString();
-};
+  return u.toString();
+}
+$('login').onclick = () => { const u = linkAccesso(); if (u) location.href = u; };
+$('copiaAccesso').onclick = () => { const u = linkAccesso(); if (u) copia(u, 'Link di accesso copiato ✔\nOra apri una nuova scheda, tieni premuto sulla barra degli indirizzi e scegli "Incolla e vai".'); };
+$('incollaRitorno').addEventListener('input', e => {
+  const m = e.target.value.match(/access_token=([a-z0-9]+)/i);
+  if (m){ token = m[1]; mem.set('twToken', token); e.target.value = ''; controllaTwitch(); }
+  else if (/error=/.test(e.target.value)){ alert('Twitch ha risposto con un errore: ' + decodeURIComponent((e.target.value.match(/error_description=([^&]+)/)||[])[1]||'').replace(/\+/g,' ')); }
+});
 $('esci').onclick = () => { token = null; twInfo = null; mem.del('twToken'); controllaTwitch(); salva(); };
 
 async function controllaTwitch(){
