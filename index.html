@@ -173,7 +173,7 @@ const PREASSEGNATI = {
   "NON SCRIVERE MENTRE GUIDI!🛞": "non-scrivere-mentre-guidi.mp3",
   "VADA VADA!📢": "vada-vada.mp3",
   "Momento di Panico!😱": "Momento di panico.mp3",
-  "Non si capisce più niente!👴🏻": "NonSiCapiscePiùNiente.mp3"
+  "Non si capisce più niente!👴🏻": "non-si-capisce-piu-niente.mp3"
 };
 const normNome = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
 const fileAbbinato = nome => { const k = Object.keys(PREASSEGNATI).find(n => normNome(n) === normNome(nome)); return k ? PREASSEGNATI[k] : null; };
@@ -183,6 +183,13 @@ if (S.versioneRisc !== 1){
     if (r) r.file = file; else S.riscattabili.push({ nome, file });
   });
   S.versioneRisc = 1;
+  mem.set('impostazioni', JSON.stringify(S));
+}
+// Correzione: file con la "ù" nel nome non trovato su GitHub -> uso il file senza accento
+if (S.versioneRisc2 !== 1){
+  S.riscattabili.forEach(r => { if (normNome(r.file) === normNome('NonSiCapiscePiùNiente.mp3')) r.file = 'non-si-capisce-piu-niente.mp3'; });
+  Object.keys(S.suoni).forEach(k => { if (normNome(S.suoni[k]) === normNome('NonSiCapiscePiùNiente.mp3')) S.suoni[k] = 'non-si-capisce-piu-niente.mp3'; });
+  S.versioneRisc2 = 1;
   mem.set('impostazioni', JSON.stringify(S));
 }
 // Aggiornamento suoni nov 2026: applica una volta i nuovi suoni fissi (i riscattabili restano come sono)

@@ -142,7 +142,7 @@
     return (C.suoni || {})[a.tipo];
   }
 
-  function suona(file){
+  function suona(file, riprova = true){
     return new Promise(res => {
       if (!file) return res(0);
       const url = /^https?:/.test(file) ? file : encodeURIComponent(file);
@@ -151,7 +151,12 @@
       let durata = 0;
       au.addEventListener('loadedmetadata', () => { durata = au.duration || 0; });
       au.addEventListener('ended', () => res(durata));
-      au.addEventListener('error', () => { log('Audio non trovato:', file); res(0); });
+      au.addEventListener('error', () => {
+        // nomi con lettere accentate: riprova con l'altra codifica (NFD/NFC)
+        const alt = file.normalize(file === file.normalize('NFC') ? 'NFD' : 'NFC');
+        if (riprova && alt !== file && !/^https?:/.test(file)) { log('Riprovo con', alt); suona(alt, false).then(res); return; }
+        log('Audio non trovato:', file); res(0);
+      });
       au.play().then(() => {
         // attende i metadati per conoscere la durata
         const t = setInterval(() => { if (au.duration) { clearInterval(t); res(au.duration); } }, 50);
