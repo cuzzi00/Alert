@@ -77,8 +77,8 @@
   const query = new URLSearchParams(location.search);
   const PREDEFINITI = {
     kickChannelId: 0, kickChatroomId: 0, durataAlertSecondi: 6, volume: 0.8,
-    suoni: { follow:'suono-follow.mp3', sub:'suono-sub.mp3', resub:'suono-sub.mp3', gift:'suono-gift.mp3',
-             bits:'suono-gift.mp3', kicks:'suono-gift.mp3', raid:'suono-raid.mp3', premio:'suono-premio.mp3' },
+    suoni: { follow:'segui-cuzzi.mp3', sub:'art-attack-finale.mp3', resub:'art-attack-finale.mp3', gift:'art-attack-finale.mp3',
+             bits:'sparkle.mp3', kicks:'sparkle.mp3', raid:'dinkleberg.mp3', premio:'suono-premio.mp3' },
     riscattabili: {}, riscattabiliConRiquadro: true,
     attivi: { follow:true, sub:true, resub:true, gift:true, bits:true, kicks:true, raid:true, premio:true },
     posizione: 'alto'
@@ -133,7 +133,10 @@
   function suonoPer(a){
     if (a.tipo === 'premio'){
       const mappa = C.riscattabili || {};
-      const key = Object.keys(mappa).find(k => k.trim().toLowerCase() === String(a.premio || '').trim().toLowerCase());
+      const norm = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const p = String(a.premio || '').trim().toLowerCase();
+      const key = Object.keys(mappa).find(k => k.trim().toLowerCase() === p)
+               || (norm(p) && Object.keys(mappa).find(k => norm(k) === norm(p)));
       if (key) return mappa[key];
     }
     return (C.suoni || {})[a.tipo];

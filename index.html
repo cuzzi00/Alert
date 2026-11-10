@@ -150,8 +150,8 @@ const NOMI = { follow:'Follow', sub:'Sub', resub:'Resub', gift:'Sub regalati', b
 const PREDEFINITE = {
   clientId: '5ly13axf59gcb5fhpzthn4v7so6u6x', kickChannelId: 107633678, kickChatroomId: 107344171,
   durataAlertSecondi: 6, volume: 0.8, posizione: 'alto', riscattabiliConRiquadro: true,
-  suoni: { follow:'suono-follow.mp3', sub:'suono-sub.mp3', resub:'suono-sub.mp3', gift:'suono-gift.mp3',
-           bits:'suono-gift.mp3', kicks:'suono-gift.mp3', raid:'suono-raid.mp3', premio:'suono-premio.mp3' },
+  suoni: { follow:'segui-cuzzi.mp3', sub:'art-attack-finale.mp3', resub:'art-attack-finale.mp3', gift:'art-attack-finale.mp3',
+           bits:'sparkle.mp3', kicks:'sparkle.mp3', raid:'dinkleberg.mp3', premio:'suono-premio.mp3' },
   attivi: { follow:true, sub:true, resub:true, gift:true, bits:true, kicks:true, raid:true, premio:true },
   riscattabili: [] // [{nome, file}]
 };
@@ -165,6 +165,33 @@ try { S = JSON.parse(mem.get('impostazioni')) || {}; } catch { S = {}; }
 if (!S.clientId) delete S.clientId;
 S = { ...PREDEFINITE, ...S, suoni:{...PREDEFINITE.suoni, ...(S.suoni||{})}, attivi:{...PREDEFINITE.attivi, ...(S.attivi||{})} };
 if (!Array.isArray(S.riscattabili)) S.riscattabili = [];
+// Riscattabili già abbinati (nome del premio su Twitch/Kick -> file audio)
+const PREASSEGNATI = {
+  "118🚑": "cuzzi-118.mp3",
+  "CUCUMBERS!🥒": "I CUCUMBERS.mp3",
+  "Bombastic side eye👀": "bombastic-side-eye.mp3",
+  "NON SCRIVERE MENTRE GUIDI!🛞": "non-scrivere-mentre-guidi.mp3",
+  "VADA VADA!📢": "vada-vada.mp3",
+  "Momento di Panico!😱": "Momento di panico.mp3",
+  "Non si capisce più niente!👴🏻": "NonSiCapiscePiùNiente.mp3"
+};
+const normNome = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const fileAbbinato = nome => { const k = Object.keys(PREASSEGNATI).find(n => normNome(n) === normNome(nome)); return k ? PREASSEGNATI[k] : null; };
+if (S.versioneRisc !== 1){
+  Object.entries(PREASSEGNATI).forEach(([nome, file]) => {
+    const r = S.riscattabili.find(x => normNome(x.nome) === normNome(nome));
+    if (r) r.file = file; else S.riscattabili.push({ nome, file });
+  });
+  S.versioneRisc = 1;
+  mem.set('impostazioni', JSON.stringify(S));
+}
+// Aggiornamento suoni nov 2026: applica una volta i nuovi suoni fissi (i riscattabili restano come sono)
+if (S.versioneSuoni !== 2){
+  S.suoni = { ...S.suoni, follow:'segui-cuzzi.mp3', sub:'art-attack-finale.mp3', resub:'art-attack-finale.mp3',
+              gift:'art-attack-finale.mp3', bits:'sparkle.mp3', kicks:'sparkle.mp3', raid:'dinkleberg.mp3' };
+  S.versioneSuoni = 2;
+  mem.set('impostazioni', JSON.stringify(S));
+}
 
 let audioFiles = [];
 let token = mem.get('twToken');
@@ -268,9 +295,10 @@ $('importaTwitch').onclick = async () => {
   const dati = (await r.json()).data || [];
   let nuovi = 0;
   dati.forEach(p => {
-    if (!S.riscattabili.some(x => x.nome.trim().toLowerCase() === p.title.trim().toLowerCase())){
-      S.riscattabili.push({ nome: p.title, file: S.suoni.premio }); nuovi++;
-    }
+    const esiste = S.riscattabili.find(x => x.nome.trim().toLowerCase() === p.title.trim().toLowerCase())
+                || S.riscattabili.find(x => normNome(x.nome) && normNome(x.nome) === normNome(p.title));
+    if (esiste){ esiste.nome = p.title; }
+    else { S.riscattabili.push({ nome: p.title, file: fileAbbinato(p.title) || S.suoni.premio }); nuovi++; }
   });
   disegnaRisc(); salva();
   alert(nuovi ? `Aggiunti ${nuovi} premi ✔ Ora scegli il suono per ognuno.` : 'Nessun premio nuovo da aggiungere.');
